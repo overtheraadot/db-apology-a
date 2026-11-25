@@ -23,11 +23,18 @@ MAX_CHARS = 200
 
 
 def verify(text):
-    """Enforce the gate from RULES.txt: 1-200 chars, non-blank, one line."""
+    """Enforce the gate from RULES.txt: 1-200 chars, non-blank, one line.
+
+    Also rejects leading/trailing whitespace: the judged text is the
+    line itself, so stray spaces would count against the limit and
+    look sloppy on the leaderboard.
+    """
     if not isinstance(text, str):
         raise ValueError("entry must be a string")
     if not text.strip():
         raise ValueError("entry must not be only white space")
+    if text != text.strip():
+        raise ValueError("entry must not have leading/trailing whitespace")
     if len(text) > MAX_CHARS:
         raise ValueError("entry is %d chars, over the 200-char limit" % len(text))
     if "\n" in text.strip():
@@ -47,7 +54,9 @@ def main():
     path = write_entry()
     with open(path, encoding="utf-8") as f:
         text = f.read()
-    print("Wrote %s (%d chars, %d line(s))" % (path, len(text), text.count("\n") + 1))
+    headroom = MAX_CHARS - len(text)
+    print("Wrote %s (%d chars, %d line(s), %d chars of headroom)"
+          % (path, len(text), text.count("\n") + 1, headroom))
     print(text)
 
 
